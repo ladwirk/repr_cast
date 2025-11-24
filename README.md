@@ -210,6 +210,8 @@ The macro works with all Rust integer types:
 - The enum cannot have generics (currently)
 - All discriminant values must fit in the specified integer type
 
+The macro provides clear error messages if these requirements are not met.
+
 ## Comparison with `#[repr(i*)]` / `#[repr(u*)]`
 
 Rust's built-in `#[repr(i*)]` and `#[repr(u*)]` attributes only control memory layout. They don't provide any conversion methods. This library:

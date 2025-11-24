@@ -120,6 +120,23 @@ Located in `tests/`:
 - Tests the public API
 - Validates generated code compiles and works correctly
 
+### Compile-Fail Tests (6 test cases)
+
+Located in `tests/ui/`:
+- Uses [trybuild](https://docs.rs/trybuild) framework
+- Verifies macro produces helpful error messages for invalid input
+- Each `.rs` file is a failing test case with corresponding `.stderr` file
+
+**Test Cases**:
+- `not_an_enum.rs` - Applying macro to struct
+- `union_type.rs` - Applying macro to union
+- `enum_with_fields.rs` - Enum with tuple fields
+- `enum_with_named_fields.rs` - Enum with struct fields
+- `mixed_variants.rs` - Mixing unit and non-unit variants
+- `no_repr_type.rs` - Missing repr type argument
+
+These tests ensure users get clear, actionable error messages when they misuse the macro.
+
 ### Example Code
 
 Located in `examples/basic_usage.rs`:

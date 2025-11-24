@@ -1,0 +1,8 @@
+error: repr_cast requires either an argument like #[repr_cast(i32)] or an existing #[repr(i32)] attribute
+ --> tests/ui/no_repr_type.rs:4:1
+  |
+4 | / enum Status {
+5 | |     Pending = 0,
+6 | |     Active = 1,
+7 | | }
+  | |_^

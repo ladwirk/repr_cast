@@ -1,0 +1,7 @@
+error: repr_cast can only be applied to enums
+ --> tests/ui/not_an_enum.rs:4:1
+  |
+4 | / struct NotAnEnum {
+5 | |     field: u32,
+6 | | }
+  | |_^

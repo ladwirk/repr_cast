@@ -1,0 +1,5 @@
+error: repr_cast can only be applied to fieldless enums (enums with unit variants)
+ --> tests/ui/enum_with_fields.rs:5:5
+  |
+5 |     Variant1(u32),
+  |     ^^^^^^^^^^^^^

@@ -1,0 +1,5 @@
+error: repr_cast can only be applied to fieldless enums (enums with unit variants)
+ --> tests/ui/mixed_variants.rs:7:5
+  |
+7 |     Tuple(i32),
+  |     ^^^^^^^^^^
