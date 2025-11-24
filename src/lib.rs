@@ -38,8 +38,10 @@ mod repr_enum;
 /// ```
 ///
 /// This generates:
-/// - `From<Status> for u8` - convert enum to integer
-/// - `TryFrom<u8> for Status` - convert integer to enum (returns `StatusConversionError` for invalid values)
+/// - `From<Status> for u8` - convert owned enum to integer
+/// - `From<&Status> for u8` - convert enum reference to integer
+/// - `TryFrom<u8> for Status` - convert owned integer to enum (returns `StatusConversionError` for invalid values)
+/// - `TryFrom<&u8> for Status` - convert integer reference to enum
 /// - `Status::from_repr(value: u8) -> Option<Status>` - safe conversion from integer
 /// - `Status::as_repr(&self) -> u8` - convert enum to integer
 /// - `StatusConversionError` - error type for failed conversions

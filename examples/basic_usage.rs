@@ -79,6 +79,11 @@ fn main() {
         println!("Code 200 -> Status: {:?}", status);
     }
 
+    // Demonstrate reference conversion (doesn't consume the enum)
+    let status = HttpStatus::Ok;
+    let code_from_ref: u16 = (&status).into();
+    println!("Reference conversion: {:?} -> {} (enum still available)", status, code_from_ref);
+
     println!("\n=== Example 2: Priority Levels ===\n");
 
     // Working with signed integers
@@ -157,4 +162,63 @@ fn main() {
     println!("As integer: {}", as_int);
     println!("Back to enum: {:?}", back_to_enum);
     println!("Round-trip successful: {}", original == back_to_enum);
+
+    println!("\n=== Example 8: Reference Conversions ===\n");
+
+    // Reference conversions allow multiple uses without consuming the enum
+    let color = Color::Green;
+
+    // Convert via reference multiple times
+    let value1: u8 = (&color).into();
+    let value2: u8 = (&color).into();
+    let value3 = u8::from(&color);
+
+    println!("Color: {:?}", color);
+    println!("  Converted 3 times: {}, {}, {}", value1, value2, value3);
+    println!("  Enum still available after conversions!");
+
+    // Useful in functions that need to convert without taking ownership
+    fn log_status(status: &HttpStatus) {
+        let code: u16 = status.into();
+        println!("Logging status {:?} with code {}", status, code);
+    }
+
+    let my_status = HttpStatus::Created;
+    log_status(&my_status);
+    log_status(&my_status); // Can use again because we only passed a reference
+
+    println!("\nReference conversions prevent unnecessary clones!");
+
+    println!("\n=== Example 9: TryFrom with References ===\n");
+
+    // TryFrom also works with integer references
+    let code = 404u16;
+    let code_ref = &code;
+
+    // Convert from integer reference to enum
+    let status_result = HttpStatus::try_from(code_ref);
+    match status_result {
+        Ok(status) => println!("Code {} -> Status: {:?}", code, status),
+        Err(e) => println!("Invalid code: {}", e),
+    }
+
+    // Can use the original value after reference conversion
+    println!("Original code value still available: {}", code);
+
+    // Works with both valid and invalid values
+    let valid_codes = [200u16, 201, 404, 500];
+    for code in &valid_codes {
+        // Using reference to avoid copying
+        match HttpStatus::try_from(code) {
+            Ok(status) => println!("  {} is {:?}", code, status),
+            Err(_) => println!("  {} is not a valid HttpStatus", code),
+        }
+    }
+
+    // Error handling with references
+    let invalid_code = 999u16;
+    let result = HttpStatus::try_from(&invalid_code);
+    if let Err(e) = result {
+        println!("\nError: {} (code was {})", e, invalid_code);
+    }
 }

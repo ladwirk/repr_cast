@@ -41,11 +41,13 @@ enum Status {
 The macro generates the following for your enum:
 
 1. **`#[repr(T)]`** - Ensures the enum has the specified memory representation
-2. **`From<Enum> for T`** - Converts enum to integer
-3. **`TryFrom<T> for Enum`** - Converts integer to enum (returns `EnumConversionError` for invalid values)
-4. **`Enum::from_repr(value: T) -> Option<Enum>`** - Safe conversion from integer
-5. **`Enum::as_repr(&self) -> T`** - Converts enum to integer
-6. **`EnumConversionError`** - Error type for failed conversions
+2. **`From<Enum> for T`** - Converts owned enum to integer
+3. **`From<&Enum> for T`** - Converts enum reference to integer
+4. **`TryFrom<T> for Enum`** - Converts owned integer to enum (returns `EnumConversionError` for invalid values)
+5. **`TryFrom<&T> for Enum`** - Converts integer reference to enum
+6. **`Enum::from_repr(value: T) -> Option<Enum>`** - Safe conversion from integer
+7. **`Enum::as_repr(&self) -> T`** - Converts enum to integer
+8. **`EnumConversionError`** - Error type for failed conversions
 
 ### Examples
 
@@ -93,6 +95,36 @@ enum Priority {
 let priority = Priority::Low;
 let value: i32 = priority.into();
 assert_eq!(value, -1);
+```
+
+#### Reference conversions
+
+```rust
+#[derive(Debug, PartialEq)]
+#[repr_cast(u8)]
+enum Status {
+    Pending = 0,
+    Active = 1,
+    Completed = 2,
+}
+
+let status = Status::Active;
+
+// Convert owned enum (consumes the enum)
+let value1: u8 = status.into();
+
+// Convert reference (doesn't consume the enum)
+let status = Status::Active;
+let value2: u8 = (&status).into();
+assert_eq!(value2, 1);
+
+// Can use the enum after reference conversion
+println!("Status: {:?}, Value: {}", status, value2);
+
+// TryFrom works with references too
+let code = 1u8;
+let status = Status::try_from(&code).unwrap();
+assert_eq!(status, Status::Active);
 ```
 
 #### Implicit discriminants
@@ -185,7 +217,9 @@ Rust's built-in `#[repr(i*)]` and `#[repr(u*)]` attributes only control memory l
 - ✅ Includes `#[repr(T)]` automatically
 - ✅ Adds safe conversion methods
 - ✅ Implements standard traits (`From`, `TryFrom`)
+- ✅ Supports both owned and reference conversions
 - ✅ Provides const-compatible functions
+- ✅ Handles complex discriminant expressions
 - ✅ Includes proper error types with helpful messages
 
 ## License

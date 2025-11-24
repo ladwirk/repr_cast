@@ -107,23 +107,38 @@ fn generate_impl_methods(repr_enum: &ReprEnum) -> proc_macro2::TokenStream {
     }
 }
 
-/// Generate the From<Enum> for T trait implementation.
+/// Generate the From<Enum> for T trait implementations.
+/// Generates both owned and reference implementations:
+/// - `From<Enum> for T` - converts owned enum to integer
+/// - `From<&Enum> for T` - converts enum reference to integer
 fn generate_from_impl(repr_enum: &ReprEnum) -> proc_macro2::TokenStream {
     let name = &repr_enum.name;
     let repr_type = &repr_enum.repr_type;
     let (impl_generics, ty_generics, where_clause) = repr_enum.generics.split_for_impl();
 
     quote! {
+        // Convert owned enum to integer
         impl #impl_generics ::core::convert::From<#name #ty_generics> for #repr_type #where_clause {
             #[inline]
             fn from(value: #name #ty_generics) -> Self {
                 value.as_repr()
             }
         }
+
+        // Convert enum reference to integer
+        impl #impl_generics ::core::convert::From<&#name #ty_generics> for #repr_type #where_clause {
+            #[inline]
+            fn from(value: &#name #ty_generics) -> Self {
+                value.as_repr()
+            }
+        }
     }
 }
 
-/// Generate the TryFrom<T> for Enum trait implementation.
+/// Generate the TryFrom<T> for Enum trait implementations.
+/// Generates both owned and reference implementations:
+/// - `TryFrom<T> for Enum` - converts owned integer to enum
+/// - `TryFrom<&T> for Enum` - converts integer reference to enum
 fn generate_try_from_impl(repr_enum: &ReprEnum) -> proc_macro2::TokenStream {
     let name = &repr_enum.name;
     let repr_type = &repr_enum.repr_type;
@@ -131,12 +146,23 @@ fn generate_try_from_impl(repr_enum: &ReprEnum) -> proc_macro2::TokenStream {
     let (impl_generics, ty_generics, where_clause) = repr_enum.generics.split_for_impl();
 
     quote! {
+        // Convert owned integer to enum
         impl #impl_generics ::core::convert::TryFrom<#repr_type> for #name #ty_generics #where_clause {
             type Error = #error_type_name;
 
             #[inline]
             fn try_from(value: #repr_type) -> ::core::result::Result<Self, Self::Error> {
                 Self::from_repr(value).ok_or(#error_type_name(value))
+            }
+        }
+
+        // Convert integer reference to enum
+        impl #impl_generics ::core::convert::TryFrom<&#repr_type> for #name #ty_generics #where_clause {
+            type Error = #error_type_name;
+
+            #[inline]
+            fn try_from(value: &#repr_type) -> ::core::result::Result<Self, Self::Error> {
+                Self::from_repr(*value).ok_or(#error_type_name(*value))
             }
         }
     }
@@ -227,8 +253,16 @@ mod tests {
         let output = generate_from_impl(&repr_enum);
         let output_str = output.to_string();
 
+        // Check owned conversion
         assert!(output_str.contains("impl :: core :: convert :: From < Status > for u8"));
         assert!(output_str.contains("value . as_repr ()"));
+
+        // Check reference conversion
+        assert!(output_str.contains("impl :: core :: convert :: From < & Status > for u8"));
+
+        // Should have both implementations
+        let from_count = output_str.matches("impl").count();
+        assert_eq!(from_count, 2, "Should have 2 From implementations");
     }
 
     #[test]
@@ -237,9 +271,18 @@ mod tests {
         let output = generate_try_from_impl(&repr_enum);
         let output_str = output.to_string();
 
+        // Check owned conversion
         assert!(output_str.contains("impl :: core :: convert :: TryFrom < u8 > for Status"));
         assert!(output_str.contains("type Error = StatusConversionError"));
         assert!(output_str.contains("Self :: from_repr (value)"));
+
+        // Check reference conversion
+        assert!(output_str.contains("impl :: core :: convert :: TryFrom < & u8 > for Status"));
+        assert!(output_str.contains("Self :: from_repr (* value)"));
+
+        // Should have both implementations
+        let tryfrom_count = output_str.matches("TryFrom").count();
+        assert_eq!(tryfrom_count, 2, "Should have 2 TryFrom implementations");
     }
 
     #[test]

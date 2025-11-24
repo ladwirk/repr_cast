@@ -65,8 +65,8 @@ TokenStream → parse → ReprEnum → expand → TokenStream
 - `expand_repr_cast()` - Main entry point, orchestrates all generation
 - `generate_enum_definition()` - Enum with `#[repr(T)]`
 - `generate_impl_methods()` - `from_repr()` and `as_repr()` methods
-- `generate_from_impl()` - `From<Enum>` trait
-- `generate_try_from_impl()` - `TryFrom<T>` trait
+- `generate_from_impl()` - `From<Enum>` and `From<&Enum>` traits
+- `generate_try_from_impl()` - `TryFrom<T>` and `TryFrom<&T>` traits
 - `generate_error_type()` - Error type for failed conversions
 
 **Unit Tests** (9 tests):
@@ -112,10 +112,10 @@ Located in each module's `#[cfg(test)]` section:
 - Can use `quote!` and `parse_quote!` for convenient test setup
 - Clear isolation of logic stages
 
-### Integration Tests (14 tests)
+### Integration Tests (23 tests)
 
 Located in `tests/`:
-- `basic_tests.rs` (8 tests): Core functionality and end-to-end validation
+- `basic_tests.rs` (17 tests): Core functionality, end-to-end validation, reference conversions (From & TryFrom)
 - `complex_discriminants.rs` (6 tests): Complex const expressions and mixed discriminants
 - Tests the public API
 - Validates generated code compiles and works correctly
