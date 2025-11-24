@@ -1,6 +1,10 @@
 use repr_cast::repr_cast;
 use std::convert::TryFrom;
 
+// Constants for complex discriminant expressions
+const ERROR_BASE: u16 = 400;
+const SERVER_ERROR_BASE: u16 = 500;
+
 // Example 1: HTTP status codes with u16 representation
 #[derive(Debug, PartialEq, Clone, Copy)]
 #[repr_cast(u16)]
@@ -31,6 +35,19 @@ enum Color {
     Red,    // 0
     Green,  // 1
     Blue,   // 2
+}
+
+// Example 4: Enum with const expressions as discriminants
+#[derive(Debug, PartialEq, Clone, Copy)]
+#[repr_cast(u16)]
+enum ErrorCode {
+    Success = 0,
+    InvalidInput,           // 1
+    BadRequest = ERROR_BASE,  // 400
+    Forbidden,              // 401
+    NotFound,               // 402
+    InternalError = SERVER_ERROR_BASE,  // 500
+    ServiceUnavailable,     // 501
 }
 
 fn main() {
@@ -109,7 +126,27 @@ fn main() {
         }
     }
 
-    println!("\n=== Example 6: Round-trip Conversion ===\n");
+    println!("\n=== Example 6: Complex Discriminant Expressions ===\n");
+
+    // Demonstrate const expressions as discriminants
+    println!("ErrorCode discriminants:");
+    println!("  Success = {}", ErrorCode::Success.as_repr());
+    println!("  InvalidInput = {}", ErrorCode::InvalidInput.as_repr());
+    println!("  BadRequest = {} (from ERROR_BASE)", ErrorCode::BadRequest.as_repr());
+    println!("  Forbidden = {}", ErrorCode::Forbidden.as_repr());
+    println!("  InternalError = {} (from SERVER_ERROR_BASE)", ErrorCode::InternalError.as_repr());
+
+    // Verify const expression evaluation
+    assert_eq!(ErrorCode::BadRequest.as_repr(), ERROR_BASE);
+    assert_eq!(ErrorCode::InternalError.as_repr(), SERVER_ERROR_BASE);
+
+    // Conversion works correctly
+    assert_eq!(ErrorCode::try_from(ERROR_BASE).unwrap(), ErrorCode::BadRequest);
+    assert_eq!(ErrorCode::try_from(SERVER_ERROR_BASE).unwrap(), ErrorCode::InternalError);
+
+    println!("\nConst expressions work correctly!");
+
+    println!("\n=== Example 7: Round-trip Conversion ===\n");
 
     // Demonstrate round-trip conversion
     let original = Priority::High;

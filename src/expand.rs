@@ -67,11 +67,15 @@ fn generate_impl_methods(repr_enum: &ReprEnum) -> proc_macro2::TokenStream {
     let repr_type = &repr_enum.repr_type;
     let (impl_generics, ty_generics, where_clause) = repr_enum.generics.split_for_impl();
 
-    let from_repr_arms = repr_enum.variants.iter().map(|v| {
+    // Generate if-else chain for from_repr to handle complex discriminant expressions
+    // This works because we compare against the actual enum variant cast to the repr type,
+    // which evaluates any expressions at compile time
+    let from_repr_checks = repr_enum.variants.iter().map(|v| {
         let variant_name = &v.name;
-        let discriminant = v.calculated_discriminant.as_pattern_tokens();
         quote! {
-            #discriminant => ::core::option::Option::Some(#name::#variant_name),
+            if value == #name::#variant_name as #repr_type {
+                return ::core::option::Option::Some(#name::#variant_name);
+            }
         }
     });
 
@@ -88,10 +92,8 @@ fn generate_impl_methods(repr_enum: &ReprEnum) -> proc_macro2::TokenStream {
             /// Returns `None` if the value doesn't match any variant.
             #[inline]
             pub const fn from_repr(value: #repr_type) -> ::core::option::Option<Self> {
-                match value {
-                    #(#from_repr_arms)*
-                    _ => ::core::option::Option::None,
-                }
+                #(#from_repr_checks)*
+                ::core::option::Option::None
             }
 
             /// Converts the enum variant to its integer representation.
@@ -214,7 +216,9 @@ mod tests {
         assert!(output_str.contains("impl Status"));
         assert!(output_str.contains("pub const fn from_repr"));
         assert!(output_str.contains("pub const fn as_repr"));
-        assert!(output_str.contains("0 => :: core :: option :: Option :: Some (Status :: Pending)"));
+        // Now uses if-else chains instead of match
+        assert!(output_str.contains("if value == Status :: Pending as u8"));
+        assert!(output_str.contains("return :: core :: option :: Option :: Some (Status :: Pending)"));
     }
 
     #[test]
@@ -302,9 +306,9 @@ mod tests {
         assert!(!enum_def_str.contains("Red ="));
         assert!(!enum_def_str.contains("Green ="));
 
-        // But should be in the match patterns
-        assert!(output_str.contains("0 => :: core :: option :: Option :: Some (Color :: Red)"));
-        assert!(output_str.contains("1 => :: core :: option :: Option :: Some (Color :: Green)"));
+        // Should use if-else checks instead of match patterns
+        assert!(output_str.contains("if value == Color :: Red as u16"));
+        assert!(output_str.contains("if value == Color :: Green as u16"));
     }
 
     #[test]

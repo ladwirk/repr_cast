@@ -29,11 +29,18 @@ pub struct EnumVariant {
     /// The discriminant value, if explicitly specified
     pub discriminant: Option<Expr>,
     /// The calculated discriminant value (either explicit or implicit)
+    /// Note: This field is primarily used for testing the parse logic.
+    /// Code generation uses direct variant casts instead.
+    #[allow(dead_code)]
     pub calculated_discriminant: CalculatedDiscriminant,
 }
 
 /// Represents the calculated discriminant for a variant.
+/// Note: This type is primarily used for testing parse logic.
+/// Code generation now uses direct variant casts (e.g., `Variant as Type`)
+/// instead of pattern matching on discriminant values.
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub enum CalculatedDiscriminant {
     /// An explicit discriminant expression from the source
     Explicit(Expr),
@@ -43,6 +50,8 @@ pub enum CalculatedDiscriminant {
 
 impl CalculatedDiscriminant {
     /// Returns a token stream representing this discriminant value suitable for pattern matching.
+    /// Note: This method is kept for testing purposes but is no longer used in code generation.
+    #[allow(dead_code)]
     pub fn as_pattern_tokens(&self) -> proc_macro2::TokenStream {
         match self {
             CalculatedDiscriminant::Explicit(expr) => quote::quote! { #expr },

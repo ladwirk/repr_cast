@@ -109,6 +109,27 @@ enum Color {
 assert_eq!(Color::Green.as_repr(), 1);
 ```
 
+#### Const expressions
+
+```rust
+const ERROR_BASE: u16 = 400;
+const SERVER_ERROR_BASE: u16 = 500;
+
+#[derive(Debug, PartialEq)]
+#[repr_cast(u16)]
+enum ErrorCode {
+    Success = 0,
+    InvalidInput,                  // 1
+    BadRequest = ERROR_BASE,       // 400
+    Forbidden,                     // 401
+    InternalError = SERVER_ERROR_BASE, // 500
+    ServiceUnavailable,            // 501
+}
+
+assert_eq!(ErrorCode::BadRequest.as_repr(), ERROR_BASE);
+assert_eq!(ErrorCode::try_from(500).unwrap(), ErrorCode::InternalError);
+```
+
 #### Const contexts
 
 ```rust

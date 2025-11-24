@@ -77,6 +77,14 @@ TokenStream → parse → ReprEnum → expand → TokenStream
 - Attribute preservation
 - Signed integer types
 
+**Key Design Decision**: The `from_repr` method uses if-else chains instead of pattern matching:
+```rust
+if value == EnumName::Variant as ReprType {
+    return Some(EnumName::Variant);
+}
+```
+This approach enables support for complex discriminant expressions (like `BASE + OFFSET` or const references) that cannot be evaluated at macro expansion time. The enum variant is cast to the repr type at compile time, allowing any valid Rust constant expression to be used as a discriminant.
+
 ### 4. Glue Layer (`src/lib.rs`)
 
 **Responsibility**: Minimal orchestration layer connecting stages.
@@ -104,10 +112,11 @@ Located in each module's `#[cfg(test)]` section:
 - Can use `quote!` and `parse_quote!` for convenient test setup
 - Clear isolation of logic stages
 
-### Integration Tests (8 tests)
+### Integration Tests (14 tests)
 
-Located in `tests/basic_tests.rs`:
-- End-to-end validation of macro behavior
+Located in `tests/`:
+- `basic_tests.rs` (8 tests): Core functionality and end-to-end validation
+- `complex_discriminants.rs` (6 tests): Complex const expressions and mixed discriminants
 - Tests the public API
 - Validates generated code compiles and works correctly
 
