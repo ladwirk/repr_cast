@@ -2,6 +2,15 @@
 name = "repr_cast"
 version = "0.1.0"
 edition = "2021"
+authors = ["Emir Ladwirk"]
+description = "A procedural macro that enhances fieldless enums with proper conversions between enum variants and their integer representation types"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/ladwirk/repr_cast"
+homepage = "https://github.com/ladwirk/repr_cast"
+documentation = "https://docs.rs/repr_cast"
+readme = "README.md"
+keywords = ["enum", "repr", "conversion", "cast", "macro"]
+categories = ["rust-patterns", "no-std"]
 
 [lib]
 proc-macro = true
