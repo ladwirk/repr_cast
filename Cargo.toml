@@ -2,7 +2,7 @@
 name = "repr_cast"
 version = "0.1.0"
 edition = "2021"
-authors = ["Emir Ladwirk"]
+authors = ["Emir Ladwirk <ladwirk@rambler.ru>"]
 description = "A procedural macro that enhances fieldless enums with proper conversions between enum variants and their integer representation types"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/ladwirk/repr_cast"
